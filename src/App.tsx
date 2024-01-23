@@ -51,29 +51,32 @@ const App = () => {
   const endSession = () => {
     setSessionInProgress(false);
     const xpEarned = convertSecondsToXP(secondsPassed);
-    addXpToSkill(selectedSkill, xpEarned);
-    calculateNewLevels();
-    // update local storage/database
+    const skillsUpdatedXp = addXpToSkill(selectedSkill, xpEarned);
+    console.log('localSkillsUpdatedXp', skillsUpdatedXp);
+    const skillsUpdatedLevelsAndXp = calculateNewLevels(skillsUpdatedXp);
+    console.log('localSkillsUpdatedLevelsAndXp', skillsUpdatedLevelsAndXp);
+    updateSkillsDataOnLocalStorage(skillsUpdatedLevelsAndXp);
   };
 
-  const calculateNewLevels = () => {
-    const newSkills = { ...skills };
+  const calculateNewLevels = (newSkills) => {
     const skill = newSkills[selectedSkill];
     const xpToLevelUp = 5;
-    const xpToLevelUpLeft = xpToLevelUp - skill.xp;
-    if (xpToLevelUpLeft <= 0) {
+    let xpNeededForNextLevel = skill.level * xpToLevelUp - skill.xp;
+
+    while (xpNeededForNextLevel <= 0) {
       skill.level += 1;
-      skill.xp = 0;
-      calculateNewLevels();
-    } else {
-      setSkills(newSkills);
+      xpNeededForNextLevel += xpToLevelUp;
     }
+
+    setSkills(newSkills);
+    return newSkills;
   };
 
   const addXpToSkill = (skill: 'magic' | 'combat' | 'range', xp: number) => {
     const newSkills = { ...skills };
     newSkills[skill].xp += xp;
     setSkills(newSkills);
+    return newSkills;
   };
 
   const convertSecondsToXP = (seconds: number) => {
@@ -104,6 +107,35 @@ const App = () => {
       }
     };
   }, [sessionInProgress]);
+
+  const getSkillsDataFromLocalStorage = (): SkillsType | null => {
+    const storedData = localStorage.getItem('skills');
+
+    if (storedData) {
+      const parsedData: SkillsType = JSON.parse(storedData);
+      return parsedData;
+    } else {
+      return null;
+    }
+  };
+
+  const updateSkillsDataOnLocalStorage = (skillsData: SkillsType | null) => {
+    console.log('Skills data to be updated on local storage', skillsData);
+    if (skillsData) {
+      localStorage.setItem('skills', JSON.stringify(skillsData));
+      console.log(
+        'Successfully updated skills data on local storage to',
+        skillsData
+      );
+    }
+  };
+
+  useEffect(() => {
+    const skillsData = getSkillsDataFromLocalStorage();
+    if (skillsData) {
+      setSkills(skillsData);
+    }
+  }, []);
 
   return (
     <div className="background-desktop h-screen font-bold text-2xl relative">
