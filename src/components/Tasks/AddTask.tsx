@@ -14,7 +14,7 @@ const AddTask = ({ addTask }) => {
       <input
         type="text"
         placeholder="Add task..."
-        className="w-10/12 bg-transparent outline-none h-9"
+        className="w-10/12 bg-transparent outline-none h-9 pl-2"
         onKeyDown={handleKeyDown}
       />
     </div>
