@@ -3,6 +3,7 @@ import magicIcon from '../../assets/skills/magic.png';
 import rangeIcon from '../../assets/skills/range.png';
 import combatIcon from '../../assets/skills/combat.png';
 import { SkillsType } from '../../App';
+import { gradientContainerStyles } from '../utils/general.ts';
 
 interface SkillsProps {
   skills: SkillsType;
@@ -17,7 +18,7 @@ const Skills = ({ skills, selectedSkill, setSelectedSkill }: SkillsProps) => {
   const selectedSkillTextStyle = 'font-extrabold';
 
   return (
-    <div className="bg-gradient-to-b from-off-white-color via-off-white-color/70 to-orange-200 rounded-xl py-10">
+    <div className={`py-10 ${gradientContainerStyles}`}>
       <div className="flex w-full justify-between px-5 font-normal text-1.5sm">
         <div className="px-5">
           <img

@@ -3,6 +3,8 @@ import './index.css';
 import StartButton from './components/Buttons/StartButton.tsx';
 import Skills from './components/Skills/Skills.tsx';
 import MusicPlayer from './components/MusicPlayer/MusicPlayer.tsx';
+import SessionStats from './components/SessionStats/SessionStats.tsx';
+import Music from './components/Music/Music.tsx';
 
 type Skill = {
   level: number;
@@ -21,6 +23,10 @@ const App = () => {
     'magic' | 'combat' | 'range'
   >('combat');
   const [secondsPassed, setSecondsPassed] = useState(0);
+  console.log('seconds passed', secondsPassed);
+  const [xpGained, setXpGained] = useState(0);
+  const [levelsGained, setLevelsGained] = useState(0);
+  const [songURL, setSongURL] = useState('');
   const [skills, setSkills] = useState<SkillsType>({
     magic: {
       level: 1,
@@ -50,12 +56,13 @@ const App = () => {
 
   const endSession = () => {
     setSessionInProgress(false);
-    const xpEarned = convertSecondsToXP(secondsPassed);
-    const skillsUpdatedXp = addXpToSkill(selectedSkill, xpEarned);
-    console.log('localSkillsUpdatedXp', skillsUpdatedXp);
-    const skillsUpdatedLevelsAndXp = calculateNewLevels(skillsUpdatedXp);
-    console.log('localSkillsUpdatedLevelsAndXp', skillsUpdatedLevelsAndXp);
-    updateSkillsDataOnLocalStorage(skillsUpdatedLevelsAndXp);
+    // const xpEarned = convertSecondsToXP(secondsPassed);
+    // const skillsUpdatedXp = addXpToSkill(selectedSkill, xpEarned);
+    // const skillsUpdatedLevelsAndXp = calculateNewLevels(skillsUpdatedXp);
+    // updateSkillsDataOnLocalStorage(skillsUpdatedLevelsAndXp);
+    updateSkillsDataOnLocalStorage(skills);
+    setSecondsPassed(0);
+    setXpGained(0);
   };
 
   const calculateNewLevels = (newSkills) => {
@@ -66,6 +73,7 @@ const App = () => {
     while (xpNeededForNextLevel <= 0) {
       skill.level += 1;
       xpNeededForNextLevel += xpToLevelUp;
+      setLevelsGained((prevLevels) => prevLevels + 1); // todo: add a useEffect which calculates this automatically every time a level in "skills" changes
     }
 
     setSkills(newSkills);
@@ -92,6 +100,9 @@ const App = () => {
       // If a session is in progress, start a timer that increments secondsPassed every second.
       timer = setInterval(() => {
         setSecondsPassed((prevSeconds) => prevSeconds + 1);
+        const xpGained = convertSecondsToXP(secondsPassed);
+        setXpGained((prev) => prev + xpGained);
+        calculateNewLevels(skills);
       }, 1000);
     } else if (timer) {
       // If a session is not in progress and a timer exists, clear the timer.
@@ -119,6 +130,24 @@ const App = () => {
     }
   };
 
+  const getSongURLFromLocalStorage = (): string | null => {
+    const storedData = localStorage.getItem('songURL');
+
+    if (storedData) {
+      const parsedData: string = JSON.parse(storedData);
+      return parsedData;
+    } else {
+      return null;
+    }
+  };
+
+  const setSongURLOnLocalStorage = (songURL: string) => {
+    if (songURL) {
+      localStorage.setItem('songURL', JSON.stringify(songURL));
+      console.log('Successfully updated song URL on local storage to', songURL);
+    }
+  };
+
   const updateSkillsDataOnLocalStorage = (skillsData: SkillsType | null) => {
     console.log('Skills data to be updated on local storage', skillsData);
     if (skillsData) {
@@ -135,11 +164,25 @@ const App = () => {
     if (skillsData) {
       setSkills(skillsData);
     }
+    const songURL = getSongURLFromLocalStorage();
+    if (songURL) {
+      setSongURL(songURL);
+    }
   }, []);
+
+  useEffect(() => {
+    setSongURLOnLocalStorage(songURL);
+  }, [songURL]);
 
   return (
     <div className="background-desktop h-screen font-bold text-2xl relative">
-      <div className="flex flex-row justify-end pt-8 pr-8">
+      <div className="flex justify-between pt-8 px-8">
+        <SessionStats
+          secondsWorked={secondsPassed}
+          xpGained={xpGained}
+          selectedSkill={selectedSkill}
+          levelsGained={levelsGained}
+        />
         <Skills
           skills={skills}
           selectedSkill={selectedSkill}
@@ -152,7 +195,10 @@ const App = () => {
           sessionInProgress={sessionInProgress}
         />
       </div>
-      <MusicPlayer sessionInProgress={sessionInProgress} />
+      <div className="absolute bottom-3 right-3">
+        <Music setSongURL={setSongURL} songURL={songURL ? songURL : ''} />
+      </div>
+      <MusicPlayer songURL={songURL} sessionInProgress={sessionInProgress} />
     </div>
   );
 };

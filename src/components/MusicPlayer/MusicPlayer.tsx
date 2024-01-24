@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import YouTube from 'react-youtube';
+import getYouTubeID from 'get-youtube-id';
 
 interface MusicPlayerProps {
   sessionInProgress: boolean;
+  songURL: string;
 }
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({ sessionInProgress }) => {
+const MusicPlayer: React.FC<MusicPlayerProps> = ({
+  sessionInProgress,
+  songURL,
+}) => {
   const [player, setPlayer] = useState<any>(null);
-  const videoId = '1gwoy0bMyeg';
+  const [videoId, setVideoId] = useState<string>('');
+
+  console.log(videoId);
 
   const opts = {
     height: '0',
@@ -21,6 +28,13 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ sessionInProgress }) => {
   const onReady = (event) => {
     setPlayer(event.target);
   };
+
+  useEffect(() => {
+    if (songURL) {
+      const videoId = getYouTubeID(songURL);
+      setVideoId(videoId);
+    }
+  }, [songURL]);
 
   useEffect(() => {
     if (player) {
