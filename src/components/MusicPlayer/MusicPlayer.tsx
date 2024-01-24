@@ -14,8 +14,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({
   const [player, setPlayer] = useState<any>(null);
   const [videoId, setVideoId] = useState<string>('');
 
-  console.log(videoId);
-
   const opts = {
     height: '0',
     width: '0',

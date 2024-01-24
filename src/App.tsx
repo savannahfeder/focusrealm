@@ -23,7 +23,6 @@ const App = () => {
     'magic' | 'combat' | 'range'
   >('combat');
   const [secondsPassed, setSecondsPassed] = useState(0);
-  console.log('seconds passed', secondsPassed);
   const [xpGained, setXpGained] = useState(0);
   const [levelsGained, setLevelsGained] = useState(0);
   const [songURL, setSongURL] = useState('');
@@ -60,6 +59,7 @@ const App = () => {
     // const skillsUpdatedXp = addXpToSkill(selectedSkill, xpEarned);
     // const skillsUpdatedLevelsAndXp = calculateNewLevels(skillsUpdatedXp);
     // updateSkillsDataOnLocalStorage(skillsUpdatedLevelsAndXp);
+    calculateNewLevels(skills);
     updateSkillsDataOnLocalStorage(skills);
     setSecondsPassed(0);
     setXpGained(0);
@@ -68,16 +68,14 @@ const App = () => {
   const calculateNewLevels = (newSkills) => {
     const skill = newSkills[selectedSkill];
     const xpToLevelUp = 5;
-    let xpNeededForNextLevel = skill.level * xpToLevelUp - skill.xp;
+    let newLevel = Math.floor(skill.xp / xpToLevelUp) + 1; // Calculate new level based on total XP
+    let levelsGained = newLevel - skill.level; // Calculate how many levels were gained
 
-    while (xpNeededForNextLevel <= 0) {
-      skill.level += 1;
-      xpNeededForNextLevel += xpToLevelUp;
-      setLevelsGained((prevLevels) => prevLevels + 1); // todo: add a useEffect which calculates this automatically every time a level in "skills" changes
+    if (levelsGained > 0) {
+      skill.level = newLevel; // Update the level
+      setSkills(newSkills); // Update the skills state
+      setLevelsGained((prevLevels) => prevLevels + levelsGained); // Update levels gained
     }
-
-    setSkills(newSkills);
-    return newSkills;
   };
 
   const addXpToSkill = (skill: 'magic' | 'combat' | 'range', xp: number) => {
@@ -93,31 +91,46 @@ const App = () => {
   };
 
   useEffect(() => {
-    // Declare a variable for the timer.
+    let levelUpdateTimer: NodeJS.Timeout | null = null;
+
+    if (sessionInProgress) {
+      levelUpdateTimer = setInterval(() => {
+        calculateNewLevels(skills);
+      }, 3000); // 20 seconds
+    } else if (levelUpdateTimer) {
+      clearInterval(levelUpdateTimer);
+    }
+
+    return () => {
+      if (levelUpdateTimer) {
+        clearInterval(levelUpdateTimer);
+      }
+    };
+  }, [skills]);
+
+  useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
 
     if (sessionInProgress) {
-      // If a session is in progress, start a timer that increments secondsPassed every second.
       timer = setInterval(() => {
-        setSecondsPassed((prevSeconds) => prevSeconds + 1);
-        const xpGained = convertSecondsToXP(secondsPassed);
-        setXpGained((prev) => prev + xpGained);
-        calculateNewLevels(skills);
-      }, 1000);
+        setSecondsPassed((prevSeconds) => {
+          const newSeconds = prevSeconds + 5;
+          const localXpGained = convertSecondsToXP(newSeconds);
+          setXpGained(localXpGained);
+          addXpToSkill(selectedSkill, localXpGained);
+          return newSeconds;
+        });
+      }, 5000);
     } else if (timer) {
-      // If a session is not in progress and a timer exists, clear the timer.
       clearInterval(timer);
     }
 
-    // The function returned by useEffect is called a cleanup function.
-    // React performs the cleanup when the component unmounts.
     return () => {
-      // If a timer exists, clear the timer.
       if (timer) {
         clearInterval(timer);
       }
     };
-  }, [sessionInProgress]);
+  }, [sessionInProgress, selectedSkill, skills]);
 
   const getSkillsDataFromLocalStorage = (): SkillsType | null => {
     const storedData = localStorage.getItem('skills');
@@ -144,18 +157,12 @@ const App = () => {
   const setSongURLOnLocalStorage = (songURL: string) => {
     if (songURL) {
       localStorage.setItem('songURL', JSON.stringify(songURL));
-      console.log('Successfully updated song URL on local storage to', songURL);
     }
   };
 
   const updateSkillsDataOnLocalStorage = (skillsData: SkillsType | null) => {
-    console.log('Skills data to be updated on local storage', skillsData);
     if (skillsData) {
       localStorage.setItem('skills', JSON.stringify(skillsData));
-      console.log(
-        'Successfully updated skills data on local storage to',
-        skillsData
-      );
     }
   };
 
