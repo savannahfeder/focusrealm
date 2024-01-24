@@ -5,6 +5,8 @@ import Skills from './components/Skills/Skills.tsx';
 import MusicPlayer from './components/MusicPlayer/MusicPlayer.tsx';
 import SessionStats from './components/SessionStats/SessionStats.tsx';
 import Music from './components/Music/Music.tsx';
+import Tasks from './components/Tasks/Tasks.tsx';
+import AddTask from './components/Tasks/AddTask.tsx';
 
 type Skill = {
   level: number;
@@ -17,6 +19,11 @@ export type SkillsType = {
   range: Skill;
 };
 
+type Task = {
+  id: number;
+  name: string;
+};
+
 const App = () => {
   const [sessionInProgress, setSessionInProgress] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<
@@ -25,6 +32,7 @@ const App = () => {
   const [secondsPassed, setSecondsPassed] = useState(0);
   const [xpGained, setXpGained] = useState(0);
   const [levelsGained, setLevelsGained] = useState(0);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [songURL, setSongURL] = useState('');
   const [skills, setSkills] = useState<SkillsType>({
     magic: {
@@ -88,6 +96,26 @@ const App = () => {
   const convertSecondsToXP = (seconds: number) => {
     const xpPerSecond = 0.5;
     return seconds * xpPerSecond;
+  };
+
+  const addTask = (taskName: string) => {
+    const taskId = generateRandomNumber();
+    const task = {
+      id: taskId,
+      name: taskName,
+    };
+    const newTasks = [...tasks, task];
+    setTasks(newTasks);
+  };
+
+  const deleteTask = (taskId: number) => {
+    const tasksCopy = [...tasks];
+    const newTasks = tasksCopy.filter((task) => task.id !== taskId);
+    setTasks(newTasks);
+  };
+
+  const generateRandomNumber = () => {
+    return Math.floor(Math.random() * 1000000000);
   };
 
   useEffect(() => {
@@ -190,6 +218,7 @@ const App = () => {
           selectedSkill={selectedSkill}
           levelsGained={levelsGained}
         />
+        <AddTask addTask={addTask} />
         <Skills
           skills={skills}
           selectedSkill={selectedSkill}
@@ -204,6 +233,9 @@ const App = () => {
       </div>
       <div className="absolute bottom-3 right-3">
         <Music setSongURL={setSongURL} songURL={songURL ? songURL : ''} />
+      </div>
+      <div className="absolute bottom-5 left-7">
+        {tasks.length > 0 && <Tasks tasks={tasks} deleteTask={deleteTask} />}
       </div>
       <MusicPlayer songURL={songURL} sessionInProgress={sessionInProgress} />
     </div>

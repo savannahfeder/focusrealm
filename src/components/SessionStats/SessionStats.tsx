@@ -1,5 +1,6 @@
 import React from 'react';
 import { gradientContainerStyles } from '../utils/general.ts';
+import StyledHeader from '../Headers/StyledHeader.tsx';
 
 const SessionStats = ({
   secondsWorked,
@@ -28,18 +29,21 @@ const SessionStats = ({
   const formattedSkill = capitalizeFirstLetter(selectedSkill);
 
   return (
-    <div className={`px-20 pt-8 h-36 ${gradientContainerStyles}`}>
-      <div className="font-semibold">
-        {convertSecondsToHoursAndMinutes(secondsWorked)} Hours Worked
-      </div>
-      <div className="font-medium text-sm pl-6 mt-2">
-        <p>
-          {xpGained} {formattedSkill} XP Gained
-        </p>
-        <p>
-          {levelsGained}x {formattedSkill}{' '}
-          {levelsGained === 1 ? 'Level' : 'Levels'} Achieved
-        </p>
+    <div>
+      <StyledHeader text="Current Sessions" />
+      <div className={`px-20 pt-8 h-36 ${gradientContainerStyles}`}>
+        <div className="font-semibold">
+          {convertSecondsToHoursAndMinutes(secondsWorked)} Hours Worked
+        </div>
+        <div className="font-medium text-sm pl-6 mt-2">
+          <p>
+            {xpGained} {formattedSkill} XP Gained
+          </p>
+          <p>
+            {levelsGained}x {formattedSkill}{' '}
+            {levelsGained === 1 ? 'Level' : 'Levels'} Achieved
+          </p>
+        </div>
       </div>
     </div>
   );

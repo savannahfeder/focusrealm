@@ -4,6 +4,7 @@ import rangeIcon from '../../assets/skills/range.png';
 import combatIcon from '../../assets/skills/combat.png';
 import { SkillsType } from '../../App';
 import { gradientContainerStyles } from '../utils/general.ts';
+import StyledHeader from '../Headers/StyledHeader.tsx';
 
 interface SkillsProps {
   skills: SkillsType;
@@ -18,57 +19,60 @@ const Skills = ({ skills, selectedSkill, setSelectedSkill }: SkillsProps) => {
   const selectedSkillTextStyle = 'font-extrabold';
 
   return (
-    <div className={`py-10 ${gradientContainerStyles}`}>
-      <div className="flex w-full justify-between px-5 font-normal text-1.5sm">
-        <div className="px-5">
-          <img
-            src={magicIcon}
-            alt="magic"
-            className={`w-20 h-20 cursor-pointer hover:opacity-90 ${
-              selectedSkill === 'magic' && selectedSkillStyle
-            }`}
-            onClick={() => setSelectedSkill('magic')}
-          />
-          <div
-            className={`text-center ${
-              selectedSkill === 'magic' && selectedSkillTextStyle
-            }`}
-          >
-            Magic: {skills.magic.level}
+    <div>
+      <StyledHeader text="Skills" />
+      <div className={`py-10 ${gradientContainerStyles}`}>
+        <div className="flex w-full justify-between px-5 font-normal text-1.5sm">
+          <div className="px-5">
+            <img
+              src={magicIcon}
+              alt="magic"
+              className={`w-20 h-20 cursor-pointer hover:opacity-90 ${
+                selectedSkill === 'magic' && selectedSkillStyle
+              }`}
+              onClick={() => setSelectedSkill('magic')}
+            />
+            <div
+              className={`text-center ${
+                selectedSkill === 'magic' && selectedSkillTextStyle
+              }`}
+            >
+              Magic: {skills.magic.level}
+            </div>
           </div>
-        </div>
-        <div className="px-5">
-          <img
-            src={combatIcon}
-            alt="combat"
-            className={`w-20 h-20 cursor-pointer hover:opacity-90 ${
-              selectedSkill === 'combat' && selectedSkillStyle
-            }`}
-            onClick={() => setSelectedSkill('combat')}
-          />
-          <div
-            className={`text-center ${
-              selectedSkill === 'combat' && selectedSkillTextStyle
-            }`}
-          >
-            Combat: {skills.combat.level}
+          <div className="px-5">
+            <img
+              src={combatIcon}
+              alt="combat"
+              className={`w-20 h-20 cursor-pointer hover:opacity-90 ${
+                selectedSkill === 'combat' && selectedSkillStyle
+              }`}
+              onClick={() => setSelectedSkill('combat')}
+            />
+            <div
+              className={`text-center ${
+                selectedSkill === 'combat' && selectedSkillTextStyle
+              }`}
+            >
+              Combat: {skills.combat.level}
+            </div>
           </div>
-        </div>
-        <div className="px-5">
-          <img
-            src={rangeIcon}
-            alt="range"
-            className={`w-20 h-20 cursor-pointer hover:opacity-90 ${
-              selectedSkill === 'range' && selectedSkillStyle
-            }`}
-            onClick={() => setSelectedSkill('range')}
-          />
-          <div
-            className={`text-center ${
-              selectedSkill === 'range' && selectedSkillTextStyle
-            }`}
-          >
-            Range: {skills.range.level}
+          <div className="px-5">
+            <img
+              src={rangeIcon}
+              alt="range"
+              className={`w-20 h-20 cursor-pointer hover:opacity-90 ${
+                selectedSkill === 'range' && selectedSkillStyle
+              }`}
+              onClick={() => setSelectedSkill('range')}
+            />
+            <div
+              className={`text-center ${
+                selectedSkill === 'range' && selectedSkillTextStyle
+              }`}
+            >
+              Range: {skills.range.level}
+            </div>
           </div>
         </div>
       </div>
