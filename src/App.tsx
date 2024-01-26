@@ -118,6 +118,26 @@ const App = () => {
     return Math.floor(Math.random() * 1000000000);
   };
 
+  const retrieveTasksFromLocalStorage = () => {
+    const storedData = localStorage.getItem('tasks');
+
+    try {
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        return parsedData;
+      }
+    } catch (e) {
+      console.error('Parsing error in retrieveTasksFromLocalStorage:', e);
+      // Handle the error, possibly by initializing to a default value
+      return null; // or return null if that's your intended default state
+    }
+    return null; // or [] if you want to initialize to an empty array by default
+  };
+
+  const updateTasksOnLocalStorage = (tasks) => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  };
+
   useEffect(() => {
     let levelUpdateTimer: NodeJS.Timeout | null = null;
 
@@ -203,11 +223,26 @@ const App = () => {
     if (songURL) {
       setSongURL(songURL);
     }
+    const tasks = retrieveTasksFromLocalStorage();
+    if (tasks) {
+      setTasks(tasks);
+    }
   }, []);
+
+  useEffect(() => {
+    updateSkillsDataOnLocalStorage(skills);
+  }, [skills]);
 
   useEffect(() => {
     setSongURLOnLocalStorage(songURL);
   }, [songURL]);
+
+  useEffect(() => {
+    if (tasks && tasks.length > 0) {
+      // Check if there are tasks to save
+      updateTasksOnLocalStorage(tasks);
+    }
+  }, [tasks]);
 
   return (
     <div className="background-desktop h-screen font-bold text-2xl relative">
