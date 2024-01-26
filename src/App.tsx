@@ -114,6 +114,13 @@ const App = () => {
     setTasks(newTasks);
   };
 
+  const editTask = (taskId: number, newTaskName: string) => {
+    const tasksCopy = [...tasks];
+    const taskIndex = tasksCopy.findIndex((task) => task.id === taskId);
+    tasksCopy[taskIndex].name = newTaskName;
+    setTasks(tasksCopy);
+  };
+
   const generateRandomNumber = () => {
     return Math.floor(Math.random() * 1000000000);
   };
@@ -270,7 +277,9 @@ const App = () => {
         <Music setSongURL={setSongURL} songURL={songURL ? songURL : ''} />
       </div>
       <div className="absolute bottom-5 left-7">
-        {tasks.length > 0 && <Tasks tasks={tasks} deleteTask={deleteTask} />}
+        {tasks.length > 0 && (
+          <Tasks tasks={tasks} deleteTask={deleteTask} editTask={editTask} />
+        )}
       </div>
       <MusicPlayer songURL={songURL} sessionInProgress={sessionInProgress} />
     </div>
