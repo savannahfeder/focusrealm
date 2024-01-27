@@ -24,16 +24,25 @@ type Task = {
   name: string;
 };
 
+type MinutesWorkedHistory = {
+  date: string;
+  minutesWorked: number;
+};
+
 const App = () => {
   const [sessionInProgress, setSessionInProgress] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<
     'magic' | 'combat' | 'range'
   >('combat');
-  const [secondsPassed, setSecondsPassed] = useState(0);
+  const [secondsWorkedToday, setSecondsWorkedToday] = useState(0);
   const [xpGained, setXpGained] = useState(0);
   const [levelsGained, setLevelsGained] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [songURL, setSongURL] = useState('');
+  const [gameTicks, setGameTicks] = useState<number>(0);
+  const [minutesWorkedHistory, setMinutesWorkedHistory] = useState<
+    MinutesWorkedHistory[]
+  >([]);
   const [skills, setSkills] = useState<SkillsType>({
     magic: {
       level: 1,
@@ -69,8 +78,7 @@ const App = () => {
     // updateSkillsDataOnLocalStorage(skillsUpdatedLevelsAndXp);
     calculateNewLevels(skills);
     updateSkillsDataOnLocalStorage(skills);
-    setSecondsPassed(0);
-    setXpGained(0);
+    updateMinutesWorkedHistoryOnLocalStorage();
   };
 
   const calculateNewLevels = (newSkills) => {
@@ -95,7 +103,7 @@ const App = () => {
 
   const convertSecondsToXP = (seconds: number) => {
     const xpPerSecond = 0.5;
-    return seconds * xpPerSecond;
+    return Math.round(seconds * xpPerSecond);
   };
 
   const addTask = (taskName: string) => {
@@ -125,67 +133,109 @@ const App = () => {
     return Math.floor(Math.random() * 1000000000);
   };
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (sessionInProgress) {
+      interval = setInterval(() => {
+        setGameTicks((prevTicks) => prevTicks + 1); // Increment gameTicks every second
+      }, 1000);
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [sessionInProgress]);
+
   const retrieveTasksFromLocalStorage = () => {
     const storedData = localStorage.getItem('tasks');
 
-    try {
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        return parsedData;
-      }
-    } catch (e) {
-      console.error('Parsing error in retrieveTasksFromLocalStorage:', e);
-      // Handle the error, possibly by initializing to a default value
-      return null; // or return null if that's your intended default state
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      return parsedData;
+    } else {
+      return null; // or [] if you want to initialize to an empty array by default
     }
-    return null; // or [] if you want to initialize to an empty array by default
   };
 
   const updateTasksOnLocalStorage = (tasks) => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   };
 
+  // useEffect(() => {
+  //   let levelUpdateTimer: NodeJS.Timeout | null = null;
+
+  //   if (sessionInProgress) {
+  //     calculateNewLevels()
+  // }, [gameTicks, skills]);
+
+  // useEffect(() => {
+  //   let timer: NodeJS.Timeout | null = null;
+
+  //   if (sessionInProgress) {
+  //     timer = setInterval(() => {
+  //       setSecondsWorkedToday((prevSeconds) => {
+  //         const newSeconds = prevSeconds + 5;
+  //         const localXpGained = convertSecondsToXP(newSeconds);
+  //         setXpGained(localXpGained);
+  //         addXpToSkill(selectedSkill, localXpGained);
+  //         return newSeconds;
+  //       });
+  //     }, 5000);
+  //   } else if (timer) {
+  //     clearInterval(timer);
+  //   }
+
+  //   return () => {
+  //     if (timer) {
+  //       clearInterval(timer);
+  //     }
+  //   };
+  // }, [sessionInProgress, selectedSkill, skills]);
+
   useEffect(() => {
-    let levelUpdateTimer: NodeJS.Timeout | null = null;
-
     if (sessionInProgress) {
-      levelUpdateTimer = setInterval(() => {
-        calculateNewLevels(skills);
-      }, 3000); // 20 seconds
-    } else if (levelUpdateTimer) {
-      clearInterval(levelUpdateTimer);
+      setSecondsWorkedToday((prevSeconds) => prevSeconds + 1);
+      const localXpGained = convertSecondsToXP(secondsWorkedToday);
+      setXpGained(localXpGained);
+      addXpToSkill(selectedSkill, localXpGained);
+      calculateNewLevels(skills);
     }
+  }, [gameTicks]);
 
-    return () => {
-      if (levelUpdateTimer) {
-        clearInterval(levelUpdateTimer);
-      }
-    };
-  }, [skills]);
+  console.log(secondsWorkedToday);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-
-    if (sessionInProgress) {
-      timer = setInterval(() => {
-        setSecondsPassed((prevSeconds) => {
-          const newSeconds = prevSeconds + 5;
-          const localXpGained = convertSecondsToXP(newSeconds);
-          setXpGained(localXpGained);
-          addXpToSkill(selectedSkill, localXpGained);
-          return newSeconds;
-        });
-      }, 5000);
-    } else if (timer) {
-      clearInterval(timer);
+  // if there's a minutesWorkedHistory corresponding to the day, set secondsPassed to that value
+  const updateTimeWorkedToday = () => {
+    const today = new Date().toLocaleDateString();
+    const minutesWorkedToday = minutesWorkedHistory.find(
+      (day) => day.date === today
+    );
+    if (minutesWorkedToday) {
+      setSecondsWorkedToday(minutesWorkedToday.minutesWorked * 60);
     }
+  };
 
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
-  }, [sessionInProgress, selectedSkill, skills]);
+  const updateMinutesWorkedHistoryOnLocalStorage = () => {
+    const today = new Date().toLocaleDateString();
+    const minutesWorkedToday = minutesWorkedHistory.find(
+      (day) => day.date === today
+    );
+    if (minutesWorkedToday) {
+      minutesWorkedToday.minutesWorked = secondsWorkedToday / 60;
+    } else {
+      const newDay = {
+        date: today,
+        minutesWorked: secondsWorkedToday / 60,
+      };
+      const newMinutesWorkedHistory = [...minutesWorkedHistory, newDay];
+      setMinutesWorkedHistory(newMinutesWorkedHistory);
+    }
+    localStorage.setItem(
+      'minutesWorkedHistory',
+      JSON.stringify(minutesWorkedHistory)
+    );
+  };
 
   const getSkillsDataFromLocalStorage = (): SkillsType | null => {
     const storedData = localStorage.getItem('skills');
@@ -221,6 +271,17 @@ const App = () => {
     }
   };
 
+  const retrieveMinutesWorkedHistoryFromLocalStorage = () => {
+    const storedData = localStorage.getItem('minutesWorkedHistory');
+
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      return parsedData;
+    } else {
+      return null;
+    }
+  };
+
   useEffect(() => {
     const skillsData = getSkillsDataFromLocalStorage();
     if (skillsData) {
@@ -234,7 +295,16 @@ const App = () => {
     if (tasks) {
       setTasks(tasks);
     }
+
+    const minutesWorkedHistory = retrieveMinutesWorkedHistoryFromLocalStorage();
+    if (minutesWorkedHistory) {
+      setMinutesWorkedHistory(minutesWorkedHistory);
+    }
   }, []);
+
+  useEffect(() => {
+    updateTimeWorkedToday();
+  }, [minutesWorkedHistory]);
 
   useEffect(() => {
     updateSkillsDataOnLocalStorage(skills);
@@ -255,7 +325,7 @@ const App = () => {
     <div className="background-desktop h-screen font-bold text-2xl relative">
       <div className="flex justify-between pt-8 px-8">
         <SessionStats
-          secondsWorked={secondsPassed}
+          secondsWorked={secondsWorkedToday}
           xpGained={xpGained}
           selectedSkill={selectedSkill}
           levelsGained={levelsGained}
