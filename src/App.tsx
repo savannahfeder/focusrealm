@@ -162,37 +162,6 @@ const App = () => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   };
 
-  // useEffect(() => {
-  //   let levelUpdateTimer: NodeJS.Timeout | null = null;
-
-  //   if (sessionInProgress) {
-  //     calculateNewLevels()
-  // }, [gameTicks, skills]);
-
-  // useEffect(() => {
-  //   let timer: NodeJS.Timeout | null = null;
-
-  //   if (sessionInProgress) {
-  //     timer = setInterval(() => {
-  //       setSecondsWorkedToday((prevSeconds) => {
-  //         const newSeconds = prevSeconds + 5;
-  //         const localXpGained = convertSecondsToXP(newSeconds);
-  //         setXpGained(localXpGained);
-  //         addXpToSkill(selectedSkill, localXpGained);
-  //         return newSeconds;
-  //       });
-  //     }, 5000);
-  //   } else if (timer) {
-  //     clearInterval(timer);
-  //   }
-
-  //   return () => {
-  //     if (timer) {
-  //       clearInterval(timer);
-  //     }
-  //   };
-  // }, [sessionInProgress, selectedSkill, skills]);
-
   useEffect(() => {
     if (sessionInProgress) {
       setSecondsWorkedToday((prevSeconds) => prevSeconds + 1);
